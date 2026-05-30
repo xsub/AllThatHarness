@@ -1,0 +1,15 @@
+{
+  "name": "python-pyqt5-business-mis-erp",
+  "version": "1.0.0",
+  "description": "Target plugin for Python PyQt5 business MIS/ERP applications with exact decimal calculations and explicit business operations.",
+  "activeProfile": "python-pyqt5-business-mis-erp",
+  "skills": [
+    "pyqt5-business-mis-erp",
+    "business-decimal-precision",
+    "explicit-business-operation",
+    "qt-model-view-pyqt5",
+    "transactional-persistence",
+    "pyqt5-gui-testing"
+  ],
+  "verify": "verify.toml"
+}

@@ -1,0 +1,103 @@
+# Source Map Lock
+
+Generated: 2026-05-30
+Artifact: AllThatHarness
+
+## Claude Code docs
+
+Source: https://code.claude.com/docs/en/skills
+Local targets: `.claude/skills/*/SKILL.md`, `target-plugins/*/skills/*/SKILL.md`
+Extracted: skill directory layout, frontmatter, project skill path, plugin skill concept, body-loaded-on-use model.
+Status: referenced.
+
+Source: https://code.claude.com/docs/en/hooks
+Local targets: `.claude/settings.example.json`, `.claude/hooks/*.py`
+Extracted: hook lifecycle, SessionStart, PreToolUse, Stop, JSON stdin, structured permission decisions, Stop blocking.
+Status: referenced.
+
+Source: https://code.claude.com/docs/en/memory
+Local targets: `memory/MEMORY.md`, `.claude/hooks/session-start-context.py`
+Extracted: MEMORY.md as index, first 200 lines / 25 KB startup behavior, machine-local native memory, topic files on demand.
+Status: referenced.
+
+## Andrej Karpathy skills
+
+Source repo: https://github.com/multica-ai/andrej-karpathy-skills
+License: MIT per `.claude-plugin/plugin.json`; no standalone LICENSE file was present in the fetched repository.
+Branch: main
+Commit SHA: 2c606141936f1eeef17fa3043a72095b4765b9c2
+Retrieval date: 2026-05-30
+
+Paths adapted:
+
+- skills/karpathy-guidelines/SKILL.md -> `.claude/skills/karpathy-guidelines/SKILL.md`
+
+Paths preserved for audit:
+
+- CLAUDE.md, CURSOR.md, EXAMPLES.md, README.md, README.zh.md, `.claude-plugin/*`, `.cursor/rules/*` -> `vendor-sources/andrej-karpathy-skills/`
+
+Extracted rules: think before coding, simplicity first, surgical changes, goal-driven execution, explicit assumptions, no speculative abstraction, no drive-by refactoring, verification-oriented plans.
+Status: core.
+
+## Matt Pocock skills
+
+Source repo: https://github.com/mattpocock/skills
+License: MIT, https://raw.githubusercontent.com/mattpocock/skills/main/LICENSE
+Branch: main
+Commit SHA: unresolved by web.run; installer/source updater should replace branch URLs with commit-pinned URLs when network tooling is available.
+Retrieval date: 2026-05-02
+
+Paths adapted:
+
+- skills/engineering/diagnose/SKILL.md -> `.claude/skills/diagnose/SKILL.md`
+- skills/engineering/tdd/SKILL.md -> `.claude/skills/tdd/SKILL.md`
+- skills/engineering/grill-with-docs/SKILL.md -> `.claude/skills/grill-with-docs/SKILL.md`
+- skills/engineering/improve-codebase-architecture/SKILL.md -> `.claude/skills/improve-codebase-architecture/SKILL.md`
+- skills/engineering/setup-matt-pocock-skills/SKILL.md -> `.claude/skills/setup-matt-pocock-skills/SKILL.md`
+- skills/engineering/triage/SKILL.md -> `.claude/skills/triage/SKILL.md`
+- skills/engineering/to-prd/SKILL.md -> `.claude/skills/to-prd/SKILL.md`
+- skills/engineering/to-issues/SKILL.md -> `.claude/skills/to-issues/SKILL.md`
+- skills/engineering/zoom-out/SKILL.md -> `.claude/skills/zoom-out/SKILL.md`
+- skills/misc/git-guardrails-claude-code/SKILL.md -> `.claude/skills/git-guardrails/SKILL.md`
+- skills/misc/setup-pre-commit/SKILL.md -> `.claude/skills/setup-pre-commit/SKILL.md`
+- skills/productivity/write-a-skill/SKILL.md -> `.claude/skills/write-a-skill/SKILL.md`
+
+Extracted rules: feedback-loop-first debugging, falsifiable hypotheses, one-variable instrumentation, vertical TDD, public-interface tests, domain glossary discipline, ADR threshold, deep modules, deletion test, issue triage state machine, vertical-slice issues, git guardrails.
+Status: adapted, not a full vendor mirror.
+
+## Python/PyQt5 MIS/ERP target
+
+Source: https://docs.python.org/3/library/decimal.html
+Local targets: `target-plugins/python-pyqt5-business-mis-erp/skills/business-decimal-precision/SKILL.md`, docs/calculation-precision.md, templates/money.py
+Extracted: Decimal exactness, accounting preference, significant places, configurable precision, rounding, signals, traps, FloatOperation.
+Status: referenced.
+
+Source: https://www.riverbankcomputing.com/static/Docs/PyQt5/
+Local targets: target PyQt docs and skills.
+Extracted: PyQt5 reference surface, signals/slots, Qt properties, Designer, deployment awareness.
+Status: referenced.
+
+Source: https://doc.qt.io/qt-6/model-view-programming.html and https://doc.qt.io/archives/qt-5.15/qdoublevalidator.html
+Local targets: Qt model/view skill and UI docs.
+Extracted: model/view separation, model indexes, signals/slots, delegates, QDoubleValidator locale interpretation and decimal count limits.
+Status: referenced.
+
+Source: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
+Local targets: transactional-persistence skill and docs/transactions-audit.md.
+Extracted: explicit session transaction/unit-of-work model.
+Status: referenced.
+
+Source: https://docs.python.org/3/library/sqlite3.html
+Local targets: transactional-persistence skill and docs/transactions-audit.md.
+Extracted: explicit sqlite3 transaction/autocommit control.
+Status: referenced.
+
+Source: https://pytest-qt.readthedocs.io/en/latest/intro.html
+Local targets: pyqt5-gui-testing skill and docs/testing.md.
+Extracted: pytest-qt supports PyQt5 and qtbot fixture for widgets.
+Status: referenced.
+
+Source: https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html
+Local targets: programming-practices skill, target business operation docs.
+Extracted: validate input with actionable security guidance.
+Status: referenced.

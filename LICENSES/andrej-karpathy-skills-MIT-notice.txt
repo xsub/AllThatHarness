@@ -1,0 +1,6 @@
+Source: https://github.com/multica-ai/andrej-karpathy-skills
+Fetched commit: 2c606141936f1eeef17fa3043a72095b4765b9c2
+License: MIT per .claude-plugin/plugin.json.
+
+No standalone LICENSE file was present in the fetched repository at this commit.
+Keep this notice with the vendored source and re-check upstream license files before redistribution.
