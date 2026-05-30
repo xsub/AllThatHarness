@@ -23,19 +23,26 @@ Dry run first:
 ./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --dry-run
 ```
 
-Apply:
+Apply when the dry run is clean:
 
 ```bash
-./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --apply --backup-existing
+./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --apply
 ```
 
-The installer copies harness files into safe locations, appends a marked block to `CLAUDE.md`, writes examples instead of overwriting live settings, and uses backups when modifying existing files.
+The installer always performs a preflight before writing. Existing different files block installation by default and nothing is written. To keep existing files and write harness files beside them as numbered copies, rerun explicitly:
+
+```bash
+./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --apply --conflicts numbered
+```
+
+Numbered conflict files use `path.harness-1`, then `path.harness-2`, and so on. Existing `CLAUDE.md` and `.gitignore` files may receive an idempotent marked block.
 
 ## Verify this harness package
 
 ```bash
 python3 scripts/check-harness.py
 python3 scripts/verify.py --profile harness
+python3 scripts/verify.py --profile harness --phase test
 ```
 
 ## Verify a target repo after install

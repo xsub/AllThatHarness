@@ -5,10 +5,14 @@ Performed before packaging AllThatHarness:
 ```text
 PASS python3 scripts/check-harness.py
 PASS python3 scripts/verify.py --profile harness
+PASS python3 scripts/verify.py --profile harness --phase test
 PASS python3 scripts/verify.py --profile python-pyqt5-business-mis-erp --phase check
 PASS python3 scripts/verify.py --profile python-pyqt5-business-mis-erp --phase test
 PASS install-harness.sh --dry-run into empty target
-PASS install-harness.sh --apply --backup-existing into empty target
+PASS install-harness.sh --apply into empty target
+PASS install-harness.sh --dry-run aborts on conflicting target without writes
+PASS install-harness.sh --apply --conflicts abort aborts on conflicting target without writes
+PASS install-harness.sh --apply --conflicts numbered writes numbered copies without overwriting
 PASS installed target profile check
 PASS installed target profile test
 PASS hook blocks git push

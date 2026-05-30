@@ -1,0 +1,20 @@
+[profiles.harness]
+format = []
+check = [
+  "bash -n scripts/install-harness.sh",
+  "bash -n scripts/test-install-harness.sh",
+  "python3 scripts/check-harness.py",
+  "python3 -m compileall .claude scripts target-plugins"
+]
+test = [
+  "bash scripts/test-install-harness.sh"
+]
+pre_push = []
+
+[profiles.default]
+format = []
+check = [
+  "git diff --check"
+]
+test = []
+pre_push = []

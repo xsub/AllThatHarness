@@ -85,6 +85,7 @@ def main() -> int:
         ["docs/source-map.lock", "docs/claude-harness/source-map.lock"],
         ["docs/source-extractions/andrej-karpathy-skills.md", "docs/claude-harness/source-extractions/andrej-karpathy-skills.md"],
         ["scripts/install-harness.sh", "scripts/claude-harness/install-harness.sh"],
+        ["scripts/test-install-harness.sh", "scripts/claude-harness/test-install-harness.sh"],
         ["scripts/verify.py", "scripts/claude-harness/verify.py"],
         ["target-plugins/python-pyqt5-business-mis-erp/TARGET.md"],
         ["target-plugins/python-pyqt5-business-mis-erp/verify.toml"],
