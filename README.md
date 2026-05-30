@@ -15,27 +15,65 @@ This version fixes the earlier prototype defects:
 - first target plugin: Python PyQt5 business MIS/ERP with decimal precision and explicit business operations
 - core Karpathy guidelines added as `.claude/skills/karpathy-guidelines`
 
-## Install into a repository
+## Quick Start
 
-Dry run first:
-
-```bash
-./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --dry-run
-```
-
-Apply when the dry run is clean:
+Clone the harness:
 
 ```bash
-./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --apply
+git clone https://github.com/xsub/AllThatHarness.git
+cd AllThatHarness
 ```
 
-The installer always performs a preflight before writing. Existing different files block installation by default and nothing is written. To keep existing files and write harness files beside them as numbered copies, rerun explicitly:
+Optional sanity check:
 
 ```bash
-./scripts/install-harness.sh --target /path/to/repo --plugin python-pyqt5-business-mis-erp --apply --conflicts numbered
+python3 scripts/verify.py --profile harness
 ```
 
-Numbered conflict files use `path.harness-1`, then `path.harness-2`, and so on. Existing `CLAUDE.md` and `.gitignore` files may receive an idempotent marked block.
+Preview an install into your project:
+
+```bash
+./scripts/install-harness.sh --target /path/to/project --dry-run
+```
+
+Apply only after the preflight looks right:
+
+```bash
+./scripts/install-harness.sh --target /path/to/project --apply
+```
+
+The default target plugin is `python-pyqt5-business-mis-erp`. Pass `--plugin <name>` only when adding another target plugin.
+
+## Conflict Policy
+
+The installer always runs a preflight before writing. If it finds an existing different file, it stops before writing anything.
+
+To keep the existing file and write the harness file beside it, rerun explicitly:
+
+```bash
+./scripts/install-harness.sh --target /path/to/project --apply --conflicts numbered
+```
+
+Numbered conflict files use `path.harness-1`, then `path.harness-2`, and so on. Existing files are not overwritten.
+
+`CLAUDE.md` and `.gitignore` are special: the installer appends an idempotent marked block when the marker is not already present.
+
+## What Gets Installed
+
+- `.claude/skills/` with the core engineering skills and Karpathy guidelines.
+- `.claude/hooks/` and `.claude/settings.harness.example.json` for optional Claude Code hooks.
+- `scripts/claude-harness/` verification and push-authorization helpers.
+- `memory/`, `docs/claude-harness/`, and the selected `target-plugins/<name>/`.
+- `.claude/active-target-plugin`, unless an existing different file blocks or is handled with numbered conflict output.
+
+After installation, review `.claude/settings.harness.example.json` and merge the hooks you want into `.claude/settings.json`.
+
+## Verify An Installed Target
+
+```bash
+cd /path/to/project
+python3 scripts/claude-harness/verify.py --profile python-pyqt5-business-mis-erp
+```
 
 ## Verify this harness package
 
@@ -43,12 +81,6 @@ Numbered conflict files use `path.harness-1`, then `path.harness-2`, and so on. 
 python3 scripts/check-harness.py
 python3 scripts/verify.py --profile harness
 python3 scripts/verify.py --profile harness --phase test
-```
-
-## Verify a target repo after install
-
-```bash
-python3 scripts/claude-harness/verify.py --profile python-pyqt5-business-mis-erp
 ```
 
 Run a push authorization only after verification passes:
