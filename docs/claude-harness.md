@@ -11,7 +11,9 @@ This document is copied into target repos as documentation. It is intentionally 
 - target plugins in `target-plugins/`
 - verification by exact diff hash
 
-## First target plugin
+## Target plugins
+
+`generic` is the neutral default target plugin.
 
 `python-pyqt5-business-mis-erp` specializes the harness for business MIS/ERP applications built with Python and PyQt5.
 

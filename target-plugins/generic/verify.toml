@@ -1,0 +1,9 @@
+[profiles.generic]
+format = []
+check = [
+  "git diff --check"
+]
+test = []
+pre_push = [
+  "git diff --check"
+]

@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+from harness_diff import current_diff_hash, current_head
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover
@@ -23,41 +25,6 @@ def run(cmd: str, env: dict[str, str]) -> int:
     return subprocess.call(cmd, cwd=ROOT, shell=True, env=env)
 
 
-def git(args: list[str]) -> bytes:
-    try:
-        return subprocess.check_output(["git", *args], cwd=ROOT, stderr=subprocess.DEVNULL)
-    except Exception:
-        return b""
-
-
-def head() -> str:
-    return git(["rev-parse", "HEAD"]).decode("utf-8", "replace").strip() or "nogit"
-
-
-def diff_material() -> bytes:
-    b = bytearray()
-    b.extend(git(["diff", "--binary", "--", ".", ":(exclude).claude/state"]))
-    b.extend(b"\n--STAGED--\n")
-    b.extend(git(["diff", "--cached", "--binary", "--", ".", ":(exclude).claude/state"]))
-    b.extend(b"\n--UNTRACKED--\n")
-    for rel in sorted(git(["ls-files", "--others", "--exclude-standard"]).decode("utf-8", "replace").splitlines()):
-        if rel.startswith(".claude/state/"):
-            continue
-        p = ROOT / rel
-        if p.is_file():
-            b.extend(rel.encode())
-            b.extend(b"\0")
-            try:
-                b.extend(p.read_bytes())
-            except OSError:
-                pass
-    return bytes(b)
-
-
-def diff_hash() -> str:
-    return hashlib.sha256(diff_material()).hexdigest()
-
-
 def load_configs() -> dict:
     data: dict = {"profiles": {}}
     paths = [ROOT / ".claude" / "verify.toml"]
@@ -65,6 +32,9 @@ def load_configs() -> dict:
     if active_file.exists():
         active = active_file.read_text(encoding="utf-8").strip()
         paths.append(ROOT / "target-plugins" / active / "verify.toml")
+    for verify_path in sorted((ROOT / "target-plugins").glob("*/verify.toml")):
+        if verify_path not in paths:
+            paths.append(verify_path)
     for path in paths:
         if path.exists():
             parsed = tomllib.loads(path.read_text(encoding="utf-8"))
@@ -88,7 +58,7 @@ def write_record(status: str, profile: str, phase: str, cmds: list[str], rc: int
         "profile": profile,
         "phase": phase,
         "returncode": rc,
-        "head": head(),
+        "head": current_head(ROOT),
         "diff_hash": after,
         "diff_hash_before": before,
         "commands": cmds,
@@ -123,15 +93,15 @@ def main() -> int:
         print(f"no commands for profile={profile_name} phase={args.phase}")
     env = os.environ.copy()
     env.setdefault("QT_QPA_PLATFORM", "offscreen")
-    before = diff_hash()
+    before = current_diff_hash(ROOT)
     rc = 0
     for cmd in cmds:
         rc = run(cmd, env)
         if rc != 0:
-            after = diff_hash()
+            after = current_diff_hash(ROOT)
             write_record("fail", profile_name, args.phase, cmds, rc, before, after)
             return rc
-    after = diff_hash()
+    after = current_diff_hash(ROOT)
     if args.phase not in {"format"} and before != after:
         print("verification command mutated the working tree; rerun after reviewing changes", file=sys.stderr)
         write_record("fail", profile_name, args.phase, cmds, 3, before, after)

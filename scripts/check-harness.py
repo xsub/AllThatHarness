@@ -71,7 +71,14 @@ def main() -> int:
     if not settings_path.exists():
         settings_path = ROOT / ".claude" / "settings.harness.example.json"
     json.loads(settings_path.read_text(encoding="utf-8"))
-    json.loads((ROOT / "target-plugins" / "python-pyqt5-business-mis-erp" / "PLUGIN.json").read_text(encoding="utf-8"))
+    plugin_roots = sorted(path for path in (ROOT / "target-plugins").iterdir() if path.is_dir())
+    if not plugin_roots:
+        fail("no target plugins found")
+    for plugin_root in plugin_roots:
+        for required in ["PLUGIN.json", "TARGET.md", "verify.toml"]:
+            if not (plugin_root / required).exists():
+                fail(f"{plugin_root} missing {required}")
+        json.loads((plugin_root / "PLUGIN.json").read_text(encoding="utf-8"))
 
     script_paths = list((ROOT / "scripts").glob("*.py")) + list((ROOT / "scripts" / "claude-harness").glob("*.py"))
     for py in list((ROOT / ".claude" / "hooks").glob("*.py")) + script_paths + list((ROOT / "target-plugins").glob("*/templates/*.py")):
@@ -87,6 +94,9 @@ def main() -> int:
         ["scripts/install-harness.sh", "scripts/claude-harness/install-harness.sh"],
         ["scripts/test-install-harness.sh", "scripts/claude-harness/test-install-harness.sh"],
         ["scripts/verify.py", "scripts/claude-harness/verify.py"],
+        ["scripts/harness_diff.py", "scripts/claude-harness/harness_diff.py"],
+        ["target-plugins/generic/TARGET.md"],
+        ["target-plugins/generic/verify.toml"],
         ["target-plugins/python-pyqt5-business-mis-erp/TARGET.md"],
         ["target-plugins/python-pyqt5-business-mis-erp/verify.toml"],
     ]

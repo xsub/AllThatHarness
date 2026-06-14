@@ -9,7 +9,7 @@ check = [
   "if [ -f scripts/claude-harness/run-if-module.py ]; then python3 scripts/claude-harness/run-if-module.py mypy \"python3 -m mypy .\"; else python3 scripts/run-if-module.py mypy \"python3 -m mypy .\"; fi"
 ]
 test = [
-  "if [ -f scripts/claude-harness/run-if-module.py ]; then QT_QPA_PLATFORM=offscreen python3 scripts/claude-harness/run-if-module.py pytest \"python3 -m pytest -q\"; else QT_QPA_PLATFORM=offscreen python3 scripts/run-if-module.py pytest \"python3 -m pytest -q\"; fi"
+  "if [ -f scripts/claude-harness/run-if-module.py ]; then QT_QPA_PLATFORM=offscreen python3 scripts/claude-harness/run-if-module.py --required pytest \"python3 -m pytest -q\"; else QT_QPA_PLATFORM=offscreen python3 scripts/run-if-module.py --required pytest \"python3 -m pytest -q\"; fi"
 ]
 pre_push = [
   "git diff --check"
