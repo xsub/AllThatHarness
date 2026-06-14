@@ -22,13 +22,16 @@ Use one semantic change at a time. Verify the exact diff with `python3 scripts/c
 
 GITIGNORE_BLOCK='# claude-harness:start
 .claude/state/
+__pycache__/
+*.pyc
+*.pyo
 # claude-harness:end'
 
 usage() {
   cat <<'EOF'
 Usage:
-  install-harness.sh --target /path/to/repo [--plugin python-pyqt5-business-mis-erp] --dry-run [--conflicts abort|numbered]
-  install-harness.sh --target /path/to/repo [--plugin python-pyqt5-business-mis-erp] --apply [--conflicts abort|numbered]
+  install-harness.sh --target /path/to/repo [--plugin generic] --dry-run [--conflicts abort|numbered]
+  install-harness.sh --target /path/to/repo [--plugin generic] --apply [--conflicts abort|numbered]
 
 Conflict modes:
   abort     Stop before writing anything when an existing different file is found. Default.
@@ -78,7 +81,7 @@ done
 
 [ -n "$TARGET" ] || { echo "--target required" >&2; exit 2; }
 [ -d "$TARGET" ] || { echo "target directory does not exist: $TARGET" >&2; exit 2; }
-[ -n "$PLUGIN" ] || PLUGIN="python-pyqt5-business-mis-erp"
+[ -n "$PLUGIN" ] || PLUGIN="generic"
 [ -d "$ROOT/target-plugins/$PLUGIN" ] || { echo "plugin not found: $PLUGIN" >&2; exit 2; }
 [ "$APPLY" -ne "$DRY_RUN" ] || { echo "choose exactly one of --dry-run or --apply" >&2; exit 2; }
 case "$CONFLICTS" in
@@ -176,7 +179,15 @@ record_copy_dir() {
   while IFS= read -r src; do
     rel="${src#$src_dir/}"
     record_copy "$src" "$dest_dir/$rel"
-  done < <(find "$src_dir" -type f -print | LC_ALL=C sort)
+  done < <(
+    find "$src_dir" -type f \
+      ! -path '*/__pycache__/*' \
+      ! -path '*/.pytest_cache/*' \
+      ! -name '*.pyc' \
+      ! -name '*.pyo' \
+      ! -name '.DS_Store' \
+      -print | LC_ALL=C sort
+  )
 }
 
 record_text_file() {

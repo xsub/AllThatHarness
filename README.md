@@ -12,7 +12,7 @@ This version fixes the earlier prototype defects:
 - git hook uses structured Claude Code hook decisions
 - push requires fresh verification plus explicit authorization marker
 - target plugin system added under `target-plugins/`
-- first target plugin: Python PyQt5 business MIS/ERP with decimal precision and explicit business operations
+- neutral default target plugin plus a Python PyQt5 business MIS/ERP plugin with decimal precision and explicit business operations
 - core Karpathy guidelines added as `.claude/skills/karpathy-guidelines`
 
 ## Quick Start
@@ -42,7 +42,11 @@ Apply only after the preflight looks right:
 ./scripts/install-harness.sh --target /path/to/project --apply
 ```
 
-The default target plugin is `python-pyqt5-business-mis-erp`. Pass `--plugin <name>` only when adding another target plugin.
+The default target plugin is `generic`. Use the PyQt5 MIS/ERP specialization explicitly when it fits the target project:
+
+```bash
+./scripts/install-harness.sh --target /path/to/project --apply --plugin python-pyqt5-business-mis-erp
+```
 
 ## Conflict Policy
 
@@ -73,6 +77,12 @@ After installation, review `.claude/settings.harness.example.json` and merge the
 ```bash
 cd /path/to/project
 python3 scripts/claude-harness/verify.py --profile python-pyqt5-business-mis-erp
+```
+
+For the default generic target:
+
+```bash
+python3 scripts/claude-harness/verify.py --profile generic
 ```
 
 ## Verify this harness package

@@ -1,2 +1,5 @@
 # Claude Code Engineering Harness volatile state
 .claude/state/
+__pycache__/
+*.pyc
+*.pyo

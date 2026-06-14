@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 INSTALLER="$ROOT/scripts/install-harness.sh"
+DEFAULT_PLUGIN="generic"
 PLUGIN="python-pyqt5-business-mis-erp"
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/allthat-harness-installer.XXXXXX")"
 
@@ -36,6 +37,16 @@ assert_marker_once() {
   count="$(grep -c 'claude-harness:start' "$1")"
   [ "$count" = "1" ] || fail "expected one marker in $1, got $count"
 }
+
+default_target="$TMP_ROOT/default"
+mkdir -p "$default_target"
+"$INSTALLER" --target "$default_target" --apply > "$TMP_ROOT/default-apply.out"
+assert_exact "$default_target/.claude/active-target-plugin" "$DEFAULT_PLUGIN"
+assert_file "$default_target/target-plugins/generic/TARGET.md"
+assert_file "$default_target/.claude/skills/generic-project/SKILL.md"
+"$INSTALLER" --target "$default_target" --apply > "$TMP_ROOT/default-rerun.out"
+assert_marker_once "$default_target/CLAUDE.md"
+assert_marker_once "$default_target/.gitignore"
 
 empty_target="$TMP_ROOT/empty"
 mkdir -p "$empty_target"

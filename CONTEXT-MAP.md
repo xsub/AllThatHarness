@@ -3,7 +3,8 @@
 ## Contexts
 
 - [Root project context](./CONTEXT.md) — global language and operating rules.
-- [Python PyQt5 Business MIS/ERP target](./target-plugins/python-pyqt5-business-mis-erp/TARGET.md) — first specialized target plugin.
+- [Generic target](./target-plugins/generic/TARGET.md) — neutral default target plugin.
+- [Python PyQt5 Business MIS/ERP target](./target-plugins/python-pyqt5-business-mis-erp/TARGET.md) — specialized target plugin.
 
 ## Relationships
 

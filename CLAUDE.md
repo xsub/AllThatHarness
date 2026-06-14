@@ -30,7 +30,7 @@ Rules:
 7. Never push without fresh verification and explicit push authorization.
 8. Use good programming practice: descriptive names, cohesive modules, explicit errors, strong validation, unit/integration tests, security checks, version control, and regular refactoring.
 9. Use design patterns only when they reduce real complexity. Record the problem, rejected simpler option, seam, and added complexity before introducing a nontrivial abstraction.
-10. For business/MIS/ERP work, calculations are explicit domain operations. Use exact decimal arithmetic. No hidden widget-side business math. No binary float for money.
+10. For business/MIS/ERP work or the PyQt5 MIS/ERP target plugin, calculations are explicit domain operations. Use exact decimal arithmetic. No hidden widget-side business math. No binary float for money.
 
 ## External memory layout
 
@@ -61,10 +61,16 @@ Target plugins live under `target-plugins/<target-name>/`. They add domain-speci
 
 Active target is read from `.claude/active-target-plugin`.
 
-First target:
+Default target:
+
+```text
+generic
+```
+
+Specialized target:
 
 ```text
 python-pyqt5-business-mis-erp
 ```
 
-This target requires explicit business operations, exact decimal calculation policy, Qt model/view separation, transaction boundaries, audit events, and GUI tests with deterministic calculation vectors.
+The specialized PyQt5 MIS/ERP target requires explicit business operations, exact decimal calculation policy, Qt model/view separation, transaction boundaries, audit events, and GUI tests with deterministic calculation vectors.

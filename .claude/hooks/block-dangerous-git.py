@@ -5,16 +5,22 @@ Reads Claude Code hook JSON from stdin. Emits structured PreToolUse decisions.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import re
-import subprocess
+import shlex
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path.cwd()
 STATE = ROOT / ".claude" / "state"
+
+for candidate in (ROOT / "scripts" / "claude-harness", ROOT / "scripts"):
+    if (candidate / "harness_diff.py").exists():
+        sys.path.insert(0, str(candidate))
+        break
+
+from harness_diff import current_diff_hash, current_head  # noqa: E402
 
 
 def deny(reason: str) -> int:
@@ -32,34 +38,6 @@ def allow() -> int:
     return 0
 
 
-def run_git(args: list[str]) -> bytes:
-    try:
-        return subprocess.check_output(["git", *args], cwd=ROOT, stderr=subprocess.DEVNULL)
-    except Exception:
-        return b""
-
-
-def current_head() -> str:
-    return run_git(["rev-parse", "HEAD"]).decode("utf-8", "replace").strip()
-
-
-def current_diff_hash() -> str:
-    h = hashlib.sha256()
-    for args in (["diff", "--binary", "--", ".", ":(exclude).claude/state"],
-                 ["diff", "--cached", "--binary", "--", ".", ":(exclude).claude/state"]):
-        h.update(run_git(list(args)))
-    untracked = run_git(["ls-files", "--others", "--exclude-standard"]).decode("utf-8", "replace").splitlines()
-    for rel in sorted(p for p in untracked if not p.startswith(".claude/state/")):
-        p = ROOT / rel
-        if p.is_file():
-            h.update(rel.encode())
-            try:
-                h.update(p.read_bytes())
-            except OSError:
-                pass
-    return h.hexdigest()
-
-
 def load_json(path: Path) -> dict:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -75,8 +53,8 @@ def push_is_authorized() -> bool:
         return False
     if auth.get("expires_at", 0) < now:
         return False
-    head = current_head()
-    diff_hash = current_diff_hash()
+    head = current_head(ROOT)
+    diff_hash = current_diff_hash(ROOT)
     return (
         auth.get("head") == head and
         auth.get("diff_hash") == diff_hash and
@@ -86,19 +64,50 @@ def push_is_authorized() -> bool:
     )
 
 
-def git_commands(command: str) -> list[str]:
-    # Split on shell control operators first, then find command fragments beginning with git.
-    fragments = re.split(r"(?:&&|\|\||;|\n)", command)
-    found: list[str] = []
+def git_commands(command: str) -> list[list[str]]:
+    fragments = re.split(r"(?:&&|\|\||\||;|\n)", command)
+    found: list[list[str]] = []
     for fragment in fragments:
-        m = re.search(r"(^|\s)(git\s+[^;&|\n]+)", fragment)
-        if m:
-            found.append(m.group(2).strip())
+        try:
+            tokens = shlex.split(fragment)
+        except ValueError:
+            tokens = fragment.split()
+        for index, token in enumerate(tokens):
+            if token == "git":
+                found.append(tokens[index:])
+                break
     return found
 
 
-def is_force_push(cmd: str) -> bool:
-    return bool(re.search(r"\bgit\s+push(?![\w-])", cmd)) and bool(re.search(r"\s(-f|--force|--force-with-lease)(\s|$)", cmd))
+def git_subcommand(tokens: list[str]) -> tuple[str, list[str]]:
+    options_with_value = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env"}
+    index = 1
+    while index < len(tokens):
+        token = tokens[index]
+        if token in options_with_value:
+            index += 2
+            continue
+        if token.startswith("--git-dir=") or token.startswith("--work-tree=") or token.startswith("--namespace="):
+            index += 1
+            continue
+        if token.startswith("-"):
+            index += 1
+            continue
+        return token, tokens[index + 1 :]
+    return "", []
+
+
+def has_force_flag(args: list[str]) -> bool:
+    for arg in args:
+        if arg in {"-f", "--force", "--force-with-lease"} or arg.startswith("--force-with-lease="):
+            return True
+        if arg.startswith("-") and not arg.startswith("--") and "f" in arg:
+            return True
+    return False
+
+
+def has_clean_force_flag(args: list[str]) -> bool:
+    return any(arg.startswith("-") and "f" in arg for arg in args)
 
 
 def main() -> int:
@@ -117,22 +126,24 @@ def main() -> int:
         return deny("Blocked: deleting .git is destructive.")
 
     for cmd in git_commands(command):
-        if is_force_push(cmd):
+        subcommand, args = git_subcommand(cmd)
+        if subcommand == "push" and has_force_flag(args):
             return deny("Blocked: force push is not allowed from Claude Code.")
-        if re.search(r"\bgit\s+push(?![\w-])", cmd):
+        if subcommand == "push":
             if not push_is_authorized():
                 return deny("Blocked: git push requires fresh verification and explicit authorization. Run scripts/claude-harness/verify.py, then scripts/claude-harness/authorize-push.py.")
-        blocked_patterns = [
-            (r"\bgit\s+reset(?![\w-])\s+--hard\b", "git reset --hard"),
-            (r"\bgit\s+clean(?![\w-])\s+.*(?:^|\s)-[A-Za-z]*f", "git clean -f"),
-            (r"\bgit\s+branch(?![\w-])\s+-D\b", "git branch -D"),
-            (r"\bgit\s+checkout(?![\w-])\s+\.\s*$", "git checkout ."),
-            (r"\bgit\s+restore(?![\w-])\s+\.\s*$", "git restore ."),
-            (r"\bgit\s+restore(?![\w-])\s+--source\b", "git restore --source"),
-        ]
-        for pattern, label in blocked_patterns:
-            if re.search(pattern, cmd):
-                return deny(f"Blocked: {label} is destructive or can discard work.")
+        if subcommand == "reset" and "--hard" in args:
+            return deny("Blocked: git reset --hard is destructive or can discard work.")
+        if subcommand == "clean" and has_clean_force_flag(args):
+            return deny("Blocked: git clean -f is destructive or can discard work.")
+        if subcommand == "branch" and "-D" in args:
+            return deny("Blocked: git branch -D is destructive or can discard work.")
+        if subcommand == "checkout" and args == ["."]:
+            return deny("Blocked: git checkout . is destructive or can discard work.")
+        if subcommand == "restore" and args == ["."]:
+            return deny("Blocked: git restore . is destructive or can discard work.")
+        if subcommand == "restore" and "--source" in args:
+            return deny("Blocked: git restore --source is destructive or can discard work.")
 
     return allow()
 

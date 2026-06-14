@@ -1,0 +1,10 @@
+{
+  "name": "generic",
+  "version": "1.0.0",
+  "description": "Neutral target plugin for general software projects.",
+  "activeProfile": "generic",
+  "skills": [
+    "generic-project"
+  ],
+  "verify": "verify.toml"
+}
